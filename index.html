@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="es">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detector de Bullying</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100%;
+      height: 100%;
+    }
+    
+    html {
+      height: 100%;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+    
+    @media (min-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+    }
+    
+    .header {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      margin: 0 0 8px 0;
+      color: #2d3748;
+      font-size: 22px;
+    }
+    
+    .header p {
+      margin: 0;
+      color: #718096;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    
+    @media (min-width: 768px) {
+      .header {
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      
+      .header h1 {
+        font-size: 28px;
+      }
+      
+      .header p {
+        font-size: 14px;
+      }
+    }
+    
+    .sensor-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .sensor-status {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    @media (min-width: 768px) {
+      .sensor-panel {
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      
+      .sensor-status {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .status-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #cbd5e0;
+      transition: all 0.3s ease;
+    }
+    
+    .status-dot.active {
+      background: #48bb78;
+      box-shadow: 0 0 12px rgba(72, 187, 120, 0.6);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .status-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    
+    .toggle-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .toggle-btn {
+        padding: 12px 32px;
+        font-size: 16px;
+        width: auto;
+      }
+    }
+    
+    .toggle-btn:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .toggle-btn.active {
+      background: #e53e3e;
+    }
+    
+    .toggle-btn.active:hover {
+      background: #c53030;
+    }
+    
+    .alert-trigger {
+      background: #fff5f5;
+      border: 2px dashed #fc8181;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    
+    .alert-trigger h3 {
+      margin: 0 0 12px 0;
+      color: #c53030;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    
+    .alert-btn {
+      background: #e53e3e;
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .alert-trigger {
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      
+      .alert-trigger h3 {
+        font-size: 18px;
+      }
+      
+      .alert-btn {
+        padding: 16px 48px;
+        font-size: 18px;
+        letter-spacing: 1px;
+        width: auto;
+      }
+    }
+    
+    .alert-btn:hover {
+      background: #c53030;
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
+    }
+    
+    .alert-btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .contacts-section {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .contacts-section h2 {
+      margin: 0 0 16px 0;
+      color: #2d3748;
+      font-size: 18px;
+    }
+    
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    
+    .contact-input {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.3s ease;
+    }
+    
+    @media (min-width: 768px) {
+      .contacts-section {
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      
+      .contacts-section h2 {
+        font-size: 20px;
+      }
+      
+      .contact-form {
+        flex-direction: row;
+        gap: 12px;
+      }
+      
+      .contact-input {
+        font-size: 14px;
+      }
+    }
+    
+    .contact-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .add-contact-btn {
+      background: #48bb78;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .add-contact-btn {
+        font-size: 14px;
+        width: auto;
+      }
+    }
+    
+    .add-contact-btn:hover {
+      background: #38a169;
+    }
+    
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .contact-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: #f7fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .contact-name {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 14px;
+    }
+    
+    .contact-phone {
+      color: #718096;
+      font-size: 13px;
+    }
+    
+    .delete-contact-btn {
+      background: #fc8181;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .delete-contact-btn:hover {
+      background: #f56565;
+    }
+    
+    .alerts-history {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .alerts-history h2 {
+      margin: 0 0 16px 0;
+      color: #2d3748;
+      font-size: 18px;
+    }
+    
+    .alert-item {
+      padding: 14px;
+      background: #fff5f5;
+      border-left: 4px solid #e53e3e;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .alert-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    
+    .alert-type {
+      font-weight: 700;
+      color: #c53030;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    
+    .alert-time {
+      color: #718096;
+      font-size: 12px;
+    }
+    
+    .alert-details {
+      color: #2d3748;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    
+    @media (min-width: 768px) {
+      .alerts-history {
+        border-radius: 16px;
+        padding: 24px;
+      }
+      
+      .alerts-history h2 {
+        font-size: 20px;
+      }
+      
+      .alert-item {
+        padding: 16px;
+      }
+      
+      .alert-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      
+      .alert-type {
+        font-size: 14px;
+      }
+      
+      .alert-details {
+        font-size: 14px;
+      }
+    }
+    
+    .alert-status {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #c6f6d5;
+      color: #22543d;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #a0aec0;
+    }
+    
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      background: white;
+      padding: 14px 16px;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+      font-size: 14px;
+    }
+    
+    @media (min-width: 768px) {
+      .toast {
+        top: 20px;
+        left: auto;
+        right: 20px;
+        padding: 16px 24px;
+        max-width: 400px;
+        font-size: 16px;
+      }
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .toast.show {
+      display: flex;
+    }
+    
+    .toast.success {
+      border-left: 4px solid #48bb78;
+    }
+    
+    .toast.error {
+      border-left: 4px solid #e53e3e;
+    }
+    
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header">
+    <h1 id="app-title">Detector de Bullying</h1>
+    <p>Sistema de monitoreo y alerta para prevenir situaciones de acoso</p>
+   </div>
+   <div class="sensor-panel">
+    <div class="sensor-status">
+     <div class="status-indicator">
+      <div class="status-dot" id="status-dot"></div><span class="status-text" id="status-text">Sensor Desactivado</span>
+     </div><button class="toggle-btn" id="toggle-sensor">Activar Sensor</button>
+    </div>
+    <div class="alert-trigger" id="alert-section" style="display: none;">
+     <h3 id="alert-message">¡Alerta! Posible situación de bullying detectada</h3><button class="alert-btn" id="trigger-alert">🚨 Enviar Alerta de Emergencia</button>
+    </div>
+   </div>
+   <div class="contacts-section">
+    <h2 id="contact-label">Contactos de Emergencia</h2>
+    <form class="contact-form" id="contact-form"><input type="text" class="contact-input" id="contact-name" placeholder="Nombre del contacto" required> <input type="tel" class="contact-input" id="contact-phone" placeholder="Teléfono" required> <button type="submit" class="add-contact-btn">+ Agregar</button>
+    </form>
+    <div class="contact-list" id="contact-list"></div>
+   </div>
+   <div class="alerts-history">
+    <h2>Historial de Alertas</h2>
+    <div id="alerts-list"></div>
+   </div>
+  </div>
+  <div class="toast" id="toast"><span id="toast-message"></span>
+  </div>
+  <script>
+    const defaultConfig = {
+      app_title: "Detector de Bullying",
+      alert_message: "¡Alerta! Posible situación de bullying detectada",
+      contact_label: "Contactos de Emergencia",
+      background_color: "#667eea",
+      surface_color: "#ffffff",
+      text_color: "#2d3748",
+      primary_action_color: "#e53e3e",
+      secondary_action_color: "#48bb78",
+      font_family: "Segoe UI",
+      font_size: 16
+    };
+
+    let sensorActive = false;
+    let contacts = [];
+    let alerts = [];
+
+    const dataHandler = {
+      onDataChanged(data) {
+        alerts = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        renderAlerts();
+      }
+    };
+
+    async function onConfigChange(config) {
+      const appTitle = config.app_title || defaultConfig.app_title;
+      const alertMessage = config.alert_message || defaultConfig.alert_message;
+      const contactLabel = config.contact_label || defaultConfig.contact_label;
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryActionColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryActionColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+
+      document.getElementById('app-title').textContent = appTitle;
+      document.getElementById('alert-message').textContent = alertMessage;
+      document.getElementById('contact-label').textContent = contactLabel;
+
+      document.body.style.background = `linear-gradient(135deg, ${backgroundColor} 0%, ${backgroundColor}dd 100%)`;
+      
+      const surfaces = document.querySelectorAll('.header, .sensor-panel, .contacts-section, .alerts-history');
+      surfaces.forEach(el => el.style.background = surfaceColor);
+
+      const textElements = document.querySelectorAll('h1, h2, h3, p, .status-text, .contact-name, .alert-details');
+      textElements.forEach(el => el.style.color = textColor);
+
+      const primaryBtns = document.querySelectorAll('.alert-btn, .toggle-btn.active');
+      primaryBtns.forEach(el => el.style.background = primaryActionColor);
+
+      const secondaryBtns = document.querySelectorAll('.add-contact-btn, .toggle-btn:not(.active)');
+      secondaryBtns.forEach(el => {
+        if (!el.classList.contains('active')) {
+          el.style.background = secondaryActionColor;
+        }
+      });
+
+      const baseFontStack = 'Tahoma, Geneva, Verdana, sans-serif';
+      document.body.style.fontFamily = `${fontFamily}, ${baseFontStack}`;
+      
+      document.querySelector('.header h1').style.fontSize = `${fontSize * 1.75}px`;
+      document.querySelector('.header p').style.fontSize = `${fontSize * 0.875}px`;
+      document.querySelectorAll('h2').forEach(el => el.style.fontSize = `${fontSize * 1.25}px`);
+      document.querySelectorAll('h3').forEach(el => el.style.fontSize = `${fontSize * 1.125}px`);
+      document.body.style.fontSize = `${fontSize}px`;
+    }
+
+    async function init() {
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        showToast('Error al inicializar el sistema', 'error');
+        return;
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  config.background_color = value;
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  config.surface_color = value;
+                  window.elementSdk.setConfig({ surface_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  config.primary_action_color = value;
+                  window.elementSdk.setConfig({ primary_action_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  config.secondary_action_color = value;
+                  window.elementSdk.setConfig({ secondary_action_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                config.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                config.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["app_title", config.app_title || defaultConfig.app_title],
+            ["alert_message", config.alert_message || defaultConfig.alert_message],
+            ["contact_label", config.contact_label || defaultConfig.contact_label]
+          ])
+        });
+      }
+
+      setupEventListeners();
+    }
+
+    function setupEventListeners() {
+      document.getElementById('toggle-sensor').addEventListener('click', toggleSensor);
+      document.getElementById('trigger-alert').addEventListener('click', triggerAlert);
+      document.getElementById('contact-form').addEventListener('submit', addContact);
+    }
+
+    function toggleSensor() {
+      sensorActive = !sensorActive;
+      const btn = document.getElementById('toggle-sensor');
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      const alertSection = document.getElementById('alert-section');
+
+      if (sensorActive) {
+        btn.textContent = 'Desactivar Sensor';
+        btn.classList.add('active');
+        dot.classList.add('active');
+        text.textContent = 'Sensor Activo - Monitoreando';
+        alertSection.style.display = 'block';
+        showToast('Sensor activado correctamente', 'success');
+      } else {
+        btn.textContent = 'Activar Sensor';
+        btn.classList.remove('active');
+        dot.classList.remove('active');
+        text.textContent = 'Sensor Desactivado';
+        alertSection.style.display = 'none';
+        showToast('Sensor desactivado', 'success');
+      }
+    }
+
+    async function triggerAlert() {
+      if (!sensorActive) {
+        showToast('Debes activar el sensor primero', 'error');
+        return;
+      }
+
+      if (alerts.length >= 999) {
+        showToast('Límite de 999 alertas alcanzado. Por favor elimina algunas alertas antiguas.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('trigger-alert');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      const alert = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        location: 'Ubicación detectada',
+        alertType: 'Emergencia',
+        status: 'Notificado',
+        notifiedContacts: contacts.length.toString()
+      };
+
+      const result = await window.dataSdk.create(alert);
+      
+      btn.classList.remove('loading');
+      btn.disabled = false;
+
+      if (result.isOk) {
+        showToast(`¡Alerta enviada a ${contacts.length} contactos!`, 'success');
+      } else {
+        showToast('Error al enviar la alerta', 'error');
+      }
+    }
+
+    function addContact(e) {
+      e.preventDefault();
+      
+      const nameInput = document.getElementById('contact-name');
+      const phoneInput = document.getElementById('contact-phone');
+      
+      const name = nameInput.value.trim();
+      const phone = phoneInput.value.trim();
+      
+      if (name && phone) {
+        contacts.push({ name, phone });
+        renderContacts();
+        nameInput.value = '';
+        phoneInput.value = '';
+        showToast('Contacto agregado correctamente', 'success');
+      }
+    }
+
+    function deleteContact(index) {
+      contacts.splice(index, 1);
+      renderContacts();
+      showToast('Contacto eliminado', 'success');
+    }
+
+    function renderContacts() {
+      const list = document.getElementById('contact-list');
+      
+      if (contacts.length === 0) {
+        list.innerHTML = '<div class="empty-state"><p>No hay contactos agregados</p></div>';
+        return;
+      }
+      
+      list.innerHTML = contacts.map((contact, index) => `
+        <div class="contact-item">
+          <div class="contact-info">
+            <div class="contact-name">${contact.name}</div>
+            <div class="contact-phone">📱 ${contact.phone}</div>
+          </div>
+          <button class="delete-contact-btn" onclick="deleteContact(${index})">Eliminar</button>
+        </div>
+      `).join('');
+    }
+
+    function renderAlerts() {
+      const list = document.getElementById('alerts-list');
+      
+      if (alerts.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p>No hay alertas registradas</p>
+          </div>
+        `;
+        return;
+      }
+      
+      list.innerHTML = alerts.map(alert => {
+        const date = new Date(alert.timestamp);
+        const timeStr = date.toLocaleString('es-ES');
+        
+        return `
+          <div class="alert-item">
+            <div class="alert-header">
+              <span class="alert-type">${alert.alertType}</span>
+              <span class="alert-time">${timeStr}</span>
+            </div>
+            <div class="alert-details">
+              📍 ${alert.location}<br>
+              👥 Notificados: ${alert.notifiedContacts} contactos
+            </div>
+            <span class="alert-status">${alert.status}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      
+      toastMessage.textContent = message;
+      toast.className = `toast ${type} show`;
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99d6f7be4186ed09',t:'MTc2Mjk2MDM0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

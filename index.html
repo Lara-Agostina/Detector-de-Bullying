@@ -1,850 +1,627 @@
-<!doctype html>
+YPE html>
 <html lang="es">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Detector de Bullying</title>
-  <script src="/_sdk/data_sdk.js"></script>
-  <script src="/_sdk/element_sdk.js"></script>
-  <style>
-    body {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100%;
-      height: 100%;
-    }
-    
-    html {
-      height: 100%;
-    }
-    
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 12px;
-    }
-    
-    @media (min-width: 768px) {
-      .container {
-        padding: 20px;
-      }
-    }
-    
-    .header {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    .header h1 {
-      margin: 0 0 8px 0;
-      color: #2d3748;
-      font-size: 22px;
-    }
-    
-    .header p {
-      margin: 0;
-      color: #718096;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    
-    @media (min-width: 768px) {
-      .header {
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 20px;
-      }
-      
-      .header h1 {
-        font-size: 28px;
-      }
-      
-      .header p {
-        font-size: 14px;
-      }
-    }
-    
-    .sensor-panel {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    .sensor-status {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    
-    @media (min-width: 768px) {
-      .sensor-panel {
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 20px;
-      }
-      
-      .sensor-status {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-      }
-    }
-    
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .status-dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #cbd5e0;
-      transition: all 0.3s ease;
-    }
-    
-    .status-dot.active {
-      background: #48bb78;
-      box-shadow: 0 0 12px rgba(72, 187, 120, 0.6);
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .status-text {
-      font-size: 16px;
-      font-weight: 600;
-      color: #2d3748;
-    }
-    
-    .toggle-btn {
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 14px 24px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      width: 100%;
-    }
-    
-    @media (min-width: 768px) {
-      .toggle-btn {
-        padding: 12px 32px;
-        font-size: 16px;
-        width: auto;
-      }
-    }
-    
-    .toggle-btn:hover {
-      background: #5568d3;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    
-    .toggle-btn.active {
-      background: #e53e3e;
-    }
-    
-    .toggle-btn.active:hover {
-      background: #c53030;
-    }
-    
-    .alert-trigger {
-      background: #fff5f5;
-      border: 2px dashed #fc8181;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-    
-    .alert-trigger h3 {
-      margin: 0 0 12px 0;
-      color: #c53030;
-      font-size: 16px;
-      line-height: 1.4;
-    }
-    
-    .alert-btn {
-      background: #e53e3e;
-      color: white;
-      border: none;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      width: 100%;
-    }
-    
-    @media (min-width: 768px) {
-      .alert-trigger {
-        padding: 24px;
-        margin-bottom: 20px;
-      }
-      
-      .alert-trigger h3 {
-        font-size: 18px;
-      }
-      
-      .alert-btn {
-        padding: 16px 48px;
-        font-size: 18px;
-        letter-spacing: 1px;
-        width: auto;
-      }
-    }
-    
-    .alert-btn:hover {
-      background: #c53030;
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
-    }
-    
-    .alert-btn:disabled {
-      background: #cbd5e0;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .contacts-section {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    .contacts-section h2 {
-      margin: 0 0 16px 0;
-      color: #2d3748;
-      font-size: 18px;
-    }
-    
-    .contact-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    
-    .contact-input {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 15px;
-      transition: border-color 0.3s ease;
-    }
-    
-    @media (min-width: 768px) {
-      .contacts-section {
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 20px;
-      }
-      
-      .contacts-section h2 {
-        font-size: 20px;
-      }
-      
-      .contact-form {
-        flex-direction: row;
-        gap: 12px;
-      }
-      
-      .contact-input {
-        font-size: 14px;
-      }
-    }
-    
-    .contact-input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-    
-    .add-contact-btn {
-      background: #48bb78;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      width: 100%;
-    }
-    
-    @media (min-width: 768px) {
-      .add-contact-btn {
-        font-size: 14px;
-        width: auto;
-      }
-    }
-    
-    .add-contact-btn:hover {
-      background: #38a169;
-    }
-    
-    .contact-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .contact-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px;
-      background: #f7fafc;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-    }
-    
-    .contact-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    
-    .contact-name {
-      font-weight: 600;
-      color: #2d3748;
-      font-size: 14px;
-    }
-    
-    .contact-phone {
-      color: #718096;
-      font-size: 13px;
-    }
-    
-    .delete-contact-btn {
-      background: #fc8181;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .delete-contact-btn:hover {
-      background: #f56565;
-    }
-    
-    .alerts-history {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    .alerts-history h2 {
-      margin: 0 0 16px 0;
-      color: #2d3748;
-      font-size: 18px;
-    }
-    
-    .alert-item {
-      padding: 14px;
-      background: #fff5f5;
-      border-left: 4px solid #e53e3e;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-    
-    .alert-header {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    
-    .alert-type {
-      font-weight: 700;
-      color: #c53030;
-      font-size: 13px;
-      text-transform: uppercase;
-    }
-    
-    .alert-time {
-      color: #718096;
-      font-size: 12px;
-    }
-    
-    .alert-details {
-      color: #2d3748;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    
-    @media (min-width: 768px) {
-      .alerts-history {
-        border-radius: 16px;
-        padding: 24px;
-      }
-      
-      .alerts-history h2 {
-        font-size: 20px;
-      }
-      
-      .alert-item {
-        padding: 16px;
-      }
-      
-      .alert-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-      }
-      
-      .alert-type {
-        font-size: 14px;
-      }
-      
-      .alert-details {
-        font-size: 14px;
-      }
-    }
-    
-    .alert-status {
-      display: inline-block;
-      padding: 4px 12px;
-      background: #c6f6d5;
-      color: #22543d;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: #a0aec0;
-    }
-    
-    .empty-state svg {
-      width: 64px;
-      height: 64px;
-      margin-bottom: 16px;
-      opacity: 0.5;
-    }
-    
-    .toast {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      background: white;
-      padding: 14px 16px;
-      border-radius: 8px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      display: none;
-      align-items: center;
-      gap: 12px;
-      z-index: 1000;
-      animation: slideIn 0.3s ease;
-      font-size: 14px;
-    }
-    
-    @media (min-width: 768px) {
-      .toast {
-        top: 20px;
-        left: auto;
-        right: 20px;
-        padding: 16px 24px;
-        max-width: 400px;
-        font-size: 16px;
-      }
-    }
-    
-    @keyframes slideIn {
-      from {
-        transform: translateX(400px);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-    
-    .toast.show {
-      display: flex;
-    }
-    
-    .toast.success {
-      border-left: 4px solid #48bb78;
-    }
-    
-    .toast.error {
-      border-left: 4px solid #e53e3e;
-    }
-    
-    .loading {
-      opacity: 0.6;
-      pointer-events: none;
-    }
-  </style>
-  <style>@view-transition { navigation: auto; }</style>
-  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
- </head>
- <body>
-  <div class="container">
-   <div class="header">
-    <h1 id="app-title">Detector de Bullying</h1>
-    <p>Sistema de monitoreo y alerta para prevenir situaciones de acoso</p>
-   </div>
-   <div class="sensor-panel">
-    <div class="sensor-status">
-     <div class="status-indicator">
-      <div class="status-dot" id="status-dot"></div><span class="status-text" id="status-text">Sensor Desactivado</span>
-     </div><button class="toggle-btn" id="toggle-sensor">Activar Sensor</button>
-    </div>
-    <div class="alert-trigger" id="alert-section" style="display: none;">
-     <h3 id="alert-message">¡Alerta! Posible situación de bullying detectada</h3><button class="alert-btn" id="trigger-alert">🚨 Enviar Alerta de Emergencia</button>
-    </div>
-   </div>
-   <div class="contacts-section">
-    <h2 id="contact-label">Contactos de Emergencia</h2>
-    <form class="contact-form" id="contact-form"><input type="text" class="contact-input" id="contact-name" placeholder="Nombre del contacto" required> <input type="tel" class="contact-input" id="contact-phone" placeholder="Teléfono" required> <button type="submit" class="add-contact-btn">+ Agregar</button>
-    </form>
-    <div class="contact-list" id="contact-list"></div>
-   </div>
-   <div class="alerts-history">
-    <h2>Historial de Alertas</h2>
-    <div id="alerts-list"></div>
-   </div>
-  </div>
-  <div class="toast" id="toast"><span id="toast-message"></span>
-  </div>
-  <script>
-    const defaultConfig = {
-      app_title: "Detector de Bullying",
-      alert_message: "¡Alerta! Posible situación de bullying detectada",
-      contact_label: "Contactos de Emergencia",
-      background_color: "#667eea",
-      surface_color: "#ffffff",
-      text_color: "#2d3748",
-      primary_action_color: "#e53e3e",
-      secondary_action_color: "#48bb78",
-      font_family: "Segoe UI",
-      font_size: 16
-    };
-
-    let sensorActive = false;
-    let contacts = [];
-    let alerts = [];
-
-    const dataHandler = {
-      onDataChanged(data) {
-        alerts = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        renderAlerts();
-      }
-    };
-
-    async function onConfigChange(config) {
-      const appTitle = config.app_title || defaultConfig.app_title;
-      const alertMessage = config.alert_message || defaultConfig.alert_message;
-      const contactLabel = config.contact_label || defaultConfig.contact_label;
-      const backgroundColor = config.background_color || defaultConfig.background_color;
-      const surfaceColor = config.surface_color || defaultConfig.surface_color;
-      const textColor = config.text_color || defaultConfig.text_color;
-      const primaryActionColor = config.primary_action_color || defaultConfig.primary_action_color;
-      const secondaryActionColor = config.secondary_action_color || defaultConfig.secondary_action_color;
-      const fontFamily = config.font_family || defaultConfig.font_family;
-      const fontSize = config.font_size || defaultConfig.font_size;
-
-      document.getElementById('app-title').textContent = appTitle;
-      document.getElementById('alert-message').textContent = alertMessage;
-      document.getElementById('contact-label').textContent = contactLabel;
-
-      document.body.style.background = `linear-gradient(135deg, ${backgroundColor} 0%, ${backgroundColor}dd 100%)`;
-      
-      const surfaces = document.querySelectorAll('.header, .sensor-panel, .contacts-section, .alerts-history');
-      surfaces.forEach(el => el.style.background = surfaceColor);
-
-      const textElements = document.querySelectorAll('h1, h2, h3, p, .status-text, .contact-name, .alert-details');
-      textElements.forEach(el => el.style.color = textColor);
-
-      const primaryBtns = document.querySelectorAll('.alert-btn, .toggle-btn.active');
-      primaryBtns.forEach(el => el.style.background = primaryActionColor);
-
-      const secondaryBtns = document.querySelectorAll('.add-contact-btn, .toggle-btn:not(.active)');
-      secondaryBtns.forEach(el => {
-        if (!el.classList.contains('active')) {
-          el.style.background = secondaryActionColor;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detector de Bullying - Alerta e IA</title>
+    <!-- Carga de Tailwind CSS CDN para estilos modernos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuramos la fuente Inter (por defecto en Tailwind) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
         }
-      });
+        .scroll-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="toast-container" class="fixed top-4 right-4 z-50 transition-all duration-300 ease-in-out transform translate-x-full opacity-0">
+        <!-- Contenido del Toast se inyecta aquí -->
+    </div>
 
-      const baseFontStack = 'Tahoma, Geneva, Verdana, sans-serif';
-      document.body.style.fontFamily = `${fontFamily}, ${baseFontStack}`;
-      
-      document.querySelector('.header h1').style.fontSize = `${fontSize * 1.75}px`;
-      document.querySelector('.header p').style.fontSize = `${fontSize * 0.875}px`;
-      document.querySelectorAll('h2').forEach(el => el.style.fontSize = `${fontSize * 1.25}px`);
-      document.querySelectorAll('h3').forEach(el => el.style.fontSize = `${fontSize * 1.125}px`);
-      document.body.style.fontSize = `${fontSize}px`;
-    }
+    <div class="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-700 p-4 md:p-8">
+        <div class="max-w-3xl mx-auto space-y-6">
 
-    async function init() {
-      const initResult = await window.dataSdk.init(dataHandler);
-      if (!initResult.isOk) {
-        showToast('Error al inicializar el sistema', 'error');
-        return;
-      }
+            <!-- Header -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl">
+                <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Detector de Bullying</h1>
+                <p class="text-sm text-gray-500">Sistema de monitoreo, alerta y análisis por IA</p>
+            </div>
 
-      if (window.elementSdk) {
-        window.elementSdk.init({
-          defaultConfig,
-          onConfigChange,
-          mapToCapabilities: (config) => ({
-            recolorables: [
-              {
-                get: () => config.background_color || defaultConfig.background_color,
-                set: (value) => {
-                  config.background_color = value;
-                  window.elementSdk.setConfig({ background_color: value });
-                }
-              },
-              {
-                get: () => config.surface_color || defaultConfig.surface_color,
-                set: (value) => {
-                  config.surface_color = value;
-                  window.elementSdk.setConfig({ surface_color: value });
-                }
-              },
-              {
-                get: () => config.text_color || defaultConfig.text_color,
-                set: (value) => {
-                  config.text_color = value;
-                  window.elementSdk.setConfig({ text_color: value });
-                }
-              },
-              {
-                get: () => config.primary_action_color || defaultConfig.primary_action_color,
-                set: (value) => {
-                  config.primary_action_color = value;
-                  window.elementSdk.setConfig({ primary_action_color: value });
-                }
-              },
-              {
-                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
-                set: (value) => {
-                  config.secondary_action_color = value;
-                  window.elementSdk.setConfig({ secondary_action_color: value });
-                }
-              }
-            ],
-            borderables: [],
-            fontEditable: {
-              get: () => config.font_family || defaultConfig.font_family,
-              set: (value) => {
-                config.font_family = value;
-                window.elementSdk.setConfig({ font_family: value });
-              }
-            },
-            fontSizeable: {
-              get: () => config.font_size || defaultConfig.font_size,
-              set: (value) => {
-                config.font_size = value;
-                window.elementSdk.setConfig({ font_size: value });
-              }
-            }
-          }),
-          mapToEditPanelValues: (config) => new Map([
-            ["app_title", config.app_title || defaultConfig.app_title],
-            ["alert_message", config.alert_message || defaultConfig.alert_message],
-            ["contact_label", config.contact_label || defaultConfig.contact_label]
-          ])
-        });
-      }
+            <!-- Panel de Análisis de Texto por IA -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    🤖 Análisis de Texto por IA
+                </h2>
+                <p class="text-sm text-gray-600">Pega un mensaje o fragmento de texto para que la IA evalúe si contiene indicios de acoso o riesgo.</p>
+                
+                <textarea id="analysis-text-input" rows="4" placeholder="Escribe el texto a analizar aquí..." 
+                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition duration-150"></textarea>
 
-      setupEventListeners();
-    }
+                <button id="analyze-text-btn" onclick="analyzeText()"
+                    class="w-full px-6 py-3 font-semibold text-white bg-purple-600 rounded-xl hover:bg-purple-700 transition duration-150 shadow-md disabled:bg-gray-400">
+                    Evaluar Texto
+                </button>
 
-    function setupEventListeners() {
-      document.getElementById('toggle-sensor').addEventListener('click', toggleSensor);
-      document.getElementById('trigger-alert').addEventListener('click', triggerAlert);
-      document.getElementById('contact-form').addEventListener('submit', addContact);
-    }
+                <div id="analysis-result-card" class="hidden p-4 rounded-lg border-l-4">
+                    <h3 class="font-bold text-lg mb-2" id="analysis-title">Resultado del Análisis</h3>
+                    <p id="analysis-content" class="text-gray-700 text-sm"></p>
+                </div>
+            </div>
 
-    function toggleSensor() {
-      sensorActive = !sensorActive;
-      const btn = document.getElementById('toggle-sensor');
-      const dot = document.getElementById('status-dot');
-      const text = document.getElementById('status-text');
-      const alertSection = document.getElementById('alert-section');
+            <!-- Panel de Sensores y Alerta -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl space-y-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Estado del Sistema y Alerta SMS</h2>
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <!-- Indicador de Estado -->
+                    <div id="sensor-status-indicator" class="flex items-center gap-3">
+                        <!-- El estado se actualiza dinámicamente -->
+                    </div>
 
-      if (sensorActive) {
-        btn.textContent = 'Desactivar Sensor';
-        btn.classList.add('active');
-        dot.classList.add('active');
-        text.textContent = 'Sensor Activo - Monitoreando';
-        alertSection.style.display = 'block';
-        showToast('Sensor activado correctamente', 'success');
-      } else {
-        btn.textContent = 'Activar Sensor';
-        btn.classList.remove('active');
-        dot.classList.remove('active');
-        text.textContent = 'Sensor Desactivado';
-        alertSection.style.display = 'none';
-        showToast('Sensor desactivado', 'success');
-      }
-    }
+                    <!-- Botón de Activación -->
+                    <button id="toggle-sensor-btn" onclick="toggleSensor()"
+                        class="px-6 py-3 font-semibold rounded-xl transition duration-300 w-full md:w-auto shadow-md bg-indigo-600 hover:bg-indigo-700 text-white">
+                        Activar Sensor
+                    </button>
+                </div>
 
-    async function triggerAlert() {
-      if (!sensorActive) {
-        showToast('Debes activar el sensor primero', 'error');
-        return;
-      }
+                <!-- Sección de Alerta Manual (Inicialmente oculta) -->
+                <div id="manual-alert-section" class="mt-6 p-4 bg-red-50 border-2 border-dashed border-red-300 rounded-xl text-center hidden">
+                    <h3 class="text-lg font-bold text-red-700 mb-3">
+                        ¡Alerta! Posible situación de bullying detectada
+                    </h3>
+                    <p class="text-sm text-red-600 mb-4">
+                        Presiona este botón para enviar una **alerta SMS real** a tus contactos.
+                    </p>
+                    <button id="trigger-alert-btn" onclick="triggerAlert()"
+                        class="w-full sm:w-auto px-8 py-3 text-lg font-extrabold text-white bg-red-700 rounded-xl hover:bg-red-800 transition duration-150 shadow-lg shadow-red-500/50 disabled:bg-gray-400 disabled:shadow-none"
+                        disabled>
+                        🚨 Enviar Alerta de Emergencia SMS
+                    </button>
+                    <p id="alert-contact-warning" class="text-xs text-red-500 mt-2 hidden">
+                        Agrega al menos un contacto para poder enviar la alerta.
+                    </p>
+                    <p class="text-xs text-red-500 mt-2">
+                        ⚠️ **Aviso de API:** El mensaje SMS se enviará al primer contacto usando la API de Infobip.
+                    </p>
+                </div>
+            </div>
 
-      if (alerts.length >= 999) {
-        showToast('Límite de 999 alertas alcanzado. Por favor elimina algunas alertas antiguas.', 'error');
-        return;
-      }
+            <!-- Sección de Contactos -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Contactos de Emergencia (Privado)</h2>
 
-      const btn = document.getElementById('trigger-alert');
-      btn.classList.add('loading');
-      btn.disabled = true;
+                <!-- Formulario de Contacto -->
+                <form id="add-contact-form" class="flex flex-col md:flex-row gap-3 mb-6" onsubmit="addContact(event)">
+                    <input type="text" id="new-contact-name" placeholder="Nombre del contacto" required
+                        class="flex-1 p-3 border-2 border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+                        disabled />
+                    <input type="tel" id="new-contact-phone" placeholder="Teléfono (ej: 54911xxxxxx, sin +)" required
+                        class="flex-1 p-3 border-2 border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+                        disabled />
+                    <button type="submit" id="add-contact-btn"
+                        class="px-6 py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150 shadow-md disabled:bg-gray-400"
+                        disabled>
+                        + Agregar
+                    </button>
+                </form>
 
-      const alert = {
-        id: Date.now().toString(),
-        timestamp: new Date().toISOString(),
-        location: 'Ubicación detectada',
-        alertType: 'Emergencia',
-        status: 'Notificado',
-        notifiedContacts: contacts.length.toString()
-      };
+                <!-- Lista de Contactos -->
+                <div id="contacts-list" class="space-y-3 scroll-container">
+                    <div class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <p>Cargando contactos...</p>
+                        <p class="text-xs mt-2 break-all">ID de Usuario: <span id="user-id-display">Cargando...</span></p>
+                    </div>
+                </div>
+            </div>
 
-      const result = await window.dataSdk.create(alert);
-      
-      btn.classList.remove('loading');
-      btn.disabled = false;
-
-      if (result.isOk) {
-        showToast(`¡Alerta enviada a ${contacts.length} contactos!`, 'success');
-      } else {
-        showToast('Error al enviar la alerta', 'error');
-      }
-    }
-
-    function addContact(e) {
-      e.preventDefault();
-      
-      const nameInput = document.getElementById('contact-name');
-      const phoneInput = document.getElementById('contact-phone');
-      
-      const name = nameInput.value.trim();
-      const phone = phoneInput.value.trim();
-      
-      if (name && phone) {
-        contacts.push({ name, phone });
-        renderContacts();
-        nameInput.value = '';
-        phoneInput.value = '';
-        showToast('Contacto agregado correctamente', 'success');
-      }
-    }
-
-    function deleteContact(index) {
-      contacts.splice(index, 1);
-      renderContacts();
-      showToast('Contacto eliminado', 'success');
-    }
-
-    function renderContacts() {
-      const list = document.getElementById('contact-list');
-      
-      if (contacts.length === 0) {
-        list.innerHTML = '<div class="empty-state"><p>No hay contactos agregados</p></div>';
-        return;
-      }
-      
-      list.innerHTML = contacts.map((contact, index) => `
-        <div class="contact-item">
-          <div class="contact-info">
-            <div class="contact-name">${contact.name}</div>
-            <div class="contact-phone">📱 ${contact.phone}</div>
-          </div>
-          <button class="delete-contact-btn" onclick="deleteContact(${index})">Eliminar</button>
+            <!-- Historial de Alertas -->
+            <div class="bg-white p-6 rounded-2xl shadow-xl">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Historial de Alertas (Privado)</h2>
+                <div id="alerts-list" class="space-y-4 scroll-container">
+                    <div class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="mt-2">Cargando historial de alertas...</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      `).join('');
-    }
+    </div>
 
-    function renderAlerts() {
-      const list = document.getElementById('alerts-list');
-      
-      if (alerts.length === 0) {
-        list.innerHTML = `
-          <div class="empty-state">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <p>No hay alertas registradas</p>
-          </div>
-        `;
-        return;
-      }
-      
-      list.innerHTML = alerts.map(alert => {
-        const date = new Date(alert.timestamp);
-        const timeStr = date.toLocaleString('es-ES');
+    <!-- Firebase SDK (ES Modules) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, query, addDoc, deleteDoc, orderBy, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Variables Globales de la Aplicación y API ---
+        window.sensorActive = false;
+        window.contacts = [];
+        window.alerts = [];
+        window.isLoading = false;
         
-        return `
-          <div class="alert-item">
-            <div class="alert-header">
-              <span class="alert-type">${alert.alertType}</span>
-              <span class="alert-time">${timeStr}</span>
-            </div>
-            <div class="alert-details">
-              📍 ${alert.location}<br>
-              👥 Notificados: ${alert.notifiedContacts} contactos
-            </div>
-            <span class="alert-status">${alert.status}</span>
-          </div>
-        `;
-      }).join('');
-    }
+        // --- Configuración de APIs ---
+        
+        // Infobip SMS API
+        const INFOBLIP_URL = 'https://api.infobip.com/sms/2/text/advanced';
+        // ADVERTENCIA DE SEGURIDAD: Esta clave está expuesta y DEBE ser protegida en un entorno de producción.
+        const INFOBLIP_AUTH = 'App e8cd5a647900ec3880affdb4df9bfe41-edbbe805-c24e-42c9-8db4-2945360cb4d1';
+        const INFOBLIP_FROM = '447491163443';
+        const ALERT_MESSAGE = "🚨 Alerta de Emergencia: Se ha activado el sistema de deteccion de riesgo. Por favor, contacta a [NOMBRE DEL USUARIO] inmediatamente.";
 
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const toastMessage = document.getElementById('toast-message');
-      
-      toastMessage.textContent = message;
-      toast.className = `toast ${type} show`;
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
-    }
 
-    init();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99d6f7be4186ed09',t:'MTc2Mjk2MDM0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+        // Gemini AI API
+        const GEMINI_MODEL = "gemini-2.5-flash-preview-09-2025";
+        const API_KEY = "";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`;
+        
+        // --- Constantes del Entorno y Firebase ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let currentUserId = null;
+        let isAuthReady = false;
+
+        // Exportar funciones necesarias al scope global
+        window.toggleSensor = toggleSensor;
+        window.triggerAlert = triggerAlert;
+        window.addContact = addContact;
+        window.deleteContact = deleteContact;
+        window.analyzeText = analyzeText;
+
+        // --- Helpers de UI ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            container.innerHTML = `
+                <div class="p-4 rounded-xl shadow-2xl ${type === 'success' 
+                    ? 'bg-green-100 border-l-4 border-green-500 text-green-700' 
+                    : 'bg-red-100 border-l-4 border-red-500 text-red-700'}">
+                    <p class="font-medium">${message}</p>
+                </div>
+            `;
+            container.classList.remove('translate-x-full', 'opacity-0');
+            container.classList.add('translate-x-0', 'opacity-100');
+
+            setTimeout(() => {
+                container.classList.remove('translate-x-0', 'opacity-100');
+                container.classList.add('translate-x-full', 'opacity-0');
+            }, 5000); // 5 segundos para que se pueda leer el aviso de SMS
+        }
+        window.showToast = showToast;
+
+        // --- Manejo de API con Backoff Exponencial ---
+        async function retryFetchWithBackoff(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    if (response.status === 429 || response.status >= 500) {
+                        const delay = Math.pow(2, i) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    throw new Error(`API returned status ${response.status}: ${response.statusText}`);
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        // --- Lógica de la IA (Análisis de Texto) ---
+        async function analyzeText() {
+            const input = document.getElementById('analysis-text-input');
+            const button = document.getElementById('analyze-text-btn');
+            const resultCard = document.getElementById('analysis-result-card');
+            const resultTitle = document.getElementById('analysis-title');
+            const resultContent = document.getElementById('analysis-content');
+            
+            const userQuery = input.value.trim();
+
+            if (userQuery.length < 10) {
+                showToast('Ingresa un texto más largo para el análisis (mínimo 10 caracteres).', 'error');
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Analizando...';
+            resultCard.classList.add('hidden');
+            
+            const systemPrompt = "Actúa como un especialista en detección de acoso (bullying) en textos. Analiza el siguiente texto y proporciona una evaluación de riesgo (Nivel de Riesgo: Bajo, Medio, o Alto) y una explicación concisa en español sobre por qué ese riesgo fue asignado. Formatea tu respuesta con el título 'Nivel de Riesgo: [NIVEL]' seguido de la explicación.";
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const response = await retryFetchWithBackoff(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const analysisText = candidate.content.parts[0].text;
+                    
+                    let riskLevel = 'Bajo';
+                    let cardClass = 'border-green-500 bg-green-50 text-green-700';
+
+                    if (analysisText.includes('Alto')) {
+                        riskLevel = 'Alto';
+                        cardClass = 'border-red-600 bg-red-100 text-red-800';
+                    } else if (analysisText.includes('Medio')) {
+                        riskLevel = 'Medio';
+                        cardClass = 'border-yellow-500 bg-yellow-50 text-yellow-700';
+                    }
+                    
+                    resultTitle.textContent = `Nivel de Riesgo: ${riskLevel}`;
+                    resultContent.innerHTML = analysisText.replace(`Nivel de Riesgo: ${riskLevel}`, '').trim().replace(/\n/g, '<br/>');
+                    
+                    resultCard.className = `p-4 rounded-lg border-l-4 ${cardClass}`;
+                    resultCard.classList.remove('hidden');
+
+                } else {
+                    showToast('La IA no pudo generar un análisis válido.', 'error');
+                    resultContent.textContent = 'Error: No se recibió contenido del modelo.';
+                }
+
+            } catch (error) {
+                console.error("Error al llamar a la API de Gemini:", error);
+                showToast('Error de conexión con el servicio de IA. Inténtalo de nuevo.', 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Evaluar Texto';
+            }
+        }
+
+        // --- Renderizado de Componentes (Funciones existentes) ---
+
+        function updateSensorUI() {
+            const indicator = document.getElementById('sensor-status-indicator');
+            const button = document.getElementById('toggle-sensor-btn');
+            const alertSection = document.getElementById('manual-alert-section');
+
+            const activeClass = 'bg-green-500 shadow-green-500/50 animate-pulse';
+            const inactiveClass = 'bg-gray-400';
+            const btnActiveClass = 'bg-red-600 hover:bg-red-700 text-white';
+            const btnInactiveClass = 'bg-indigo-600 hover:bg-indigo-700 text-white';
+
+            indicator.innerHTML = `
+                <div class="w-4 h-4 rounded-full transition duration-300 ${window.sensorActive ? activeClass : inactiveClass}"></div>
+                <span class="text-lg font-medium ${window.sensorActive ? 'text-green-600' : 'text-gray-600'}">
+                    ${window.sensorActive ? 'Sensor Activo - Monitoreando' : 'Sensor Desactivado'}
+                </span>
+            `;
+
+            button.textContent = window.sensorActive ? 'Desactivar Sensor' : 'Activar Sensor';
+            button.className = `px-6 py-3 font-semibold rounded-xl transition duration-300 w-full md:w-auto shadow-md ${
+                window.sensorActive ? btnActiveClass : btnInactiveClass
+            }`;
+
+            alertSection.classList.toggle('hidden', !window.sensorActive);
+            updateAlertButtonState();
+        }
+
+        function updateAlertButtonState() {
+            const btn = document.getElementById('trigger-alert-btn');
+            const warning = document.getElementById('alert-contact-warning');
+            
+            const isDisabled = window.isLoading || window.contacts.length === 0 || !window.sensorActive;
+            btn.disabled = isDisabled;
+            warning.classList.toggle('hidden', window.contacts.length > 0);
+            
+            btn.textContent = window.isLoading ? 'Enviando SMS...' : '🚨 Enviar Alerta de Emergencia SMS';
+        }
+
+        function renderContacts() {
+            const list = document.getElementById('contacts-list');
+            
+            if (!isAuthReady) return;
+
+            if (window.contacts.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <p>No hay contactos de emergencia agregados.</p>
+                        <p class="text-xs mt-2 break-all">ID de Usuario: <span id="user-id-display">${currentUserId || 'Cargando...'}</span></p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = window.contacts.map(contact => `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col">
+                            <div class="font-semibold text-gray-800 text-sm">${contact.name}</div>
+                            <div class="text-sm text-gray-500">
+                                📱 +${contact.phone}
+                            </div>
+                        </div>
+                        <button onclick="deleteContact('${contact.id}')"
+                            class="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition duration-150 shadow-md">
+                            Eliminar
+                        </button>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('user-id-display').textContent = currentUserId || 'No disponible';
+            updateAlertButtonState();
+        }
+
+        function renderAlerts() {
+            const list = document.getElementById('alerts-list');
+            
+            if (!isAuthReady) return;
+
+            if (window.alerts.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="mt-2">No hay alertas registradas aún.</p>
+                    </div>
+                `;
+            } else {
+                list.innerHTML = window.alerts.map(alert => {
+                    let timeStr = 'Cargando...';
+                    if (alert.timestamp && alert.timestamp.toDate) {
+                        timeStr = alert.timestamp.toDate().toLocaleString('es-AR');
+                    } else if (typeof alert.timestamp === 'string') {
+                        timeStr = new Date(alert.timestamp).toLocaleString('es-AR');
+                    }
+                    const statusClass = alert.status === 'SMS Enviado' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800';
+
+                    return `
+                        <div class="p-4 mb-3 bg-red-50 border-l-4 border-red-600 rounded-lg shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
+                                <span class="text-sm font-bold text-red-700 uppercase">${alert.alertType}</span>
+                                <span class="text-xs text-gray-500">${timeStr}</span>
+                            </div>
+                            <div class="text-sm text-gray-700 space-y-1">
+                                <p>👥 Contacto: <span class="font-semibold">${alert.notifiedContactName} (+${alert.notifiedContactPhone})</span></p>
+                                <p>💬 Mensaje: ${alert.message}</p>
+                            </div>
+                            <span class="inline-block mt-2 px-3 py-1 text-xs font-semibold ${statusClass} rounded-full">
+                                ${alert.status}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // --- Funciones de Lógica (SMS y Firestore) ---
+
+        function toggleSensor() {
+            window.sensorActive = !window.sensorActive;
+            updateSensorUI();
+            showToast(window.sensorActive ? 'Sensor activado. Monitoreando.' : 'Sensor desactivado.', 'success');
+        }
+
+        async function triggerAlert() {
+            if (!window.sensorActive) {
+                showToast('Debes activar el sensor para enviar una alerta.', 'error');
+                return;
+            }
+            if (!db || !currentUserId) {
+                showToast('El sistema no está listo para registrar la alerta.', 'error');
+                return;
+            }
+            if (window.contacts.length === 0) {
+                showToast('Agrega contactos de emergencia primero.', 'error');
+                return;
+            }
+
+            window.isLoading = true;
+            updateAlertButtonState();
+
+            const firstContact = window.contacts[0];
+            const recipientPhone = firstContact.phone;
+            const notificationMessage = ALERT_MESSAGE.replace("[NOMBRE DEL USUARIO]", "el usuario"); // Usar placeholder simple
+            let alertStatus = 'Fallo en el envío';
+
+            const smsPayload = {
+                messages: [{
+                    destinations: [{ to: recipientPhone }],
+                    from: INFOBLIP_FROM,
+                    text: notificationMessage
+                }]
+            };
+
+            try {
+                const response = await fetch(INFOBLIP_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': INFOBLIP_AUTH, 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(smsPayload)
+                });
+
+                if (response.ok) {
+                    alertStatus = 'SMS Enviado';
+                    showToast(`✅ Alerta SMS enviada a ${firstContact.name} (+${recipientPhone})`, 'success');
+                } else {
+                    const errorDetails = await response.json();
+                    console.error("Error API Infobip:", response.status, errorDetails);
+                    alertStatus = `Error Infobip: ${response.status}`;
+                    showToast(`❌ Error al enviar SMS (Estado: ${response.status}).`, 'error');
+                }
+
+            } catch (error) {
+                console.error("Error de red al enviar SMS:", error);
+                alertStatus = 'Error de red';
+                showToast('❌ Error de red o conexión al intentar enviar el SMS.', 'error');
+            }
+
+            // Registrar la alerta en Firestore (siempre después del intento de envío)
+            try {
+                const alertsCollectionPath = `artifacts/${appId}/users/${currentUserId}/alert_history`;
+                
+                const newAlert = {
+                    timestamp: serverTimestamp(),
+                    alertType: 'Emergencia Manual SMS',
+                    status: alertStatus,
+                    notifiedContactName: firstContact.name,
+                    notifiedContactPhone: recipientPhone,
+                    message: notificationMessage
+                };
+
+                await addDoc(collection(db, alertsCollectionPath), newAlert);
+            } catch (firestoreError) {
+                console.error("Error al registrar alerta en Firestore:", firestoreError);
+                showToast('Advertencia: El SMS intentó enviarse, pero hubo un error al registrarlo en el historial.', 'error');
+            } finally {
+                window.isLoading = false;
+                updateAlertButtonState();
+            }
+        }
+
+        async function addContact(e) {
+            e.preventDefault();
+            if (!db || !currentUserId || !isAuthReady) {
+                showToast('El sistema no está listo. Inténtalo de nuevo.', 'error');
+                return;
+            }
+
+            const nameInput = document.getElementById('new-contact-name');
+            const phoneInput = document.getElementById('new-contact-phone');
+
+            const name = nameInput.value.trim();
+            // Aseguramos que el teléfono tenga el código de país (se asume que es el formato de Infobip)
+            const phone = phoneInput.value.trim().replace('+', ''); 
+
+            const phoneRegex = /^\d{8,15}$/;
+            if (!name || !phone || !phoneRegex.test(phone)) {
+                showToast('Por favor, ingresa un nombre y un teléfono válido (solo dígitos, ej: 54911xxxxxx).', 'error');
+                return;
+            }
+
+            try {
+                const contactsCollectionPath = `artifacts/${appId}/users/${currentUserId}/emergency_contacts`;
+                await addDoc(collection(db, contactsCollectionPath), {
+                    name,
+                    phone,
+                    createdAt: serverTimestamp(),
+                });
+                nameInput.value = '';
+                phoneInput.value = '';
+                showToast('Contacto agregado correctamente', 'success');
+            } catch (error) {
+                console.error("Error al agregar contacto:", error);
+                showToast('Error al guardar el contacto.', 'error');
+            }
+        }
+
+        async function deleteContact(id) {
+            if (!db || !currentUserId) return;
+            try {
+                const contactsCollectionPath = `artifacts/${appId}/users/${currentUserId}/emergency_contacts`;
+                await deleteDoc(doc(db, contactsCollectionPath, id));
+                showToast('Contacto eliminado', 'success');
+            } catch (error) {
+                console.error("Error al eliminar contacto:", error);
+                showToast('Error al eliminar el contacto.', 'error');
+            }
+        }
+
+        // --- Inicialización de Firebase y Listeners ---
+        function initApp() {
+            if (!firebaseConfig || !isAuthReady) {
+                console.error("Configuración o autenticación de Firebase pendiente.");
+                return;
+            }
+
+            document.getElementById('new-contact-name').disabled = false;
+            document.getElementById('new-contact-phone').disabled = false;
+            document.getElementById('add-contact-btn').disabled = false;
+
+            if (currentUserId) {
+                // Listener de Contactos
+                const contactsCollectionPath = `artifacts/${appId}/users/${currentUserId}/emergency_contacts`;
+                const qContacts = query(collection(db, contactsCollectionPath));
+
+                onSnapshot(qContacts, (snapshot) => {
+                    window.contacts = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
+                    renderContacts();
+                }, (error) => {
+                    console.error("Error al escuchar contactos:", error);
+                    showToast('Error al cargar contactos.', 'error');
+                });
+
+                // Listener de Alertas
+                const alertsCollectionPath = `artifacts/${appId}/users/${currentUserId}/alert_history`;
+                const qAlerts = query(collection(db, alertsCollectionPath), orderBy('timestamp', 'desc'));
+
+                onSnapshot(qAlerts, (snapshot) => {
+                    window.alerts = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
+                    renderAlerts();
+                }, (error) => {
+                    console.error("Error al escuchar alertas:", error);
+                    showToast('Error al cargar historial de alertas.', 'error');
+                });
+            } else {
+                 renderContacts();
+                 renderAlerts();
+            }
+        }
+
+
+        // Bloque principal de inicialización de la aplicación
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                } else {
+                    currentUserId = null;
+                }
+                isAuthReady = true;
+                updateSensorUI();
+                initApp();
+            });
+
+            if (initialAuthToken) {
+                signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                    console.error("Error signing in with custom token, signing anonymously:", e);
+                    signInAnonymously(auth);
+                });
+            } else {
+                signInAnonymously(auth);
+            }
+
+            updateSensorUI();
+            
+        } catch (error) {
+            console.error("Error fatal en la inicialización:", error);
+            showToast('Error fatal al iniciar la aplicación.', 'error');
+        }
+    </script>
+</body>
 </html>
